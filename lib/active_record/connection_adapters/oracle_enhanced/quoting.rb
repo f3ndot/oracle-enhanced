@@ -114,6 +114,18 @@ module ActiveRecord
           "0"
         end
 
+        # ActiveRecord will, by default, include microseconds in the serialization
+        # if the Ruby Time or Date object supports them. Oracle does not support
+        # microseconds so we must always drop them.
+        def quoted_date
+          # The current abstract class explicitly formats to 6 decimals of
+          # precision. Should that change, this #sub may break.
+          #
+          # See:
+          # https://github.com/rails/rails/blob/v6.0.1/activerecord/lib/active_record/connection_adapters/abstract/quoting.rb#L126
+          super.sub(/\.[0-9]+\z/, '')
+        end
+
         def _type_cast(value)
           case value
           when Type::OracleEnhanced::TimestampTz::Data, Type::OracleEnhanced::TimestampLtz::Data
